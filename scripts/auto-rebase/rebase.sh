@@ -94,7 +94,7 @@ write_lvms_images_for_arch(){
 
     parse_images "$csv_manifest" "$image_file"
 
-    if [ $(wc -l "$image_file") -eq 0 ]; then
+    if [ $(wc -l "$image_file" | cut -d' ' -f1) -eq 0 ]; then
         >$2 echo "error: image file ($image_file) has fewer images than expected (${#include_images})"
         exit 1
     fi
@@ -118,7 +118,7 @@ update_lvms_images(){
         return 1
     }
     pushd "$workdir"
-    for arch in "${ARCHS[@]}"; do
+    for arch in ${ARCHS[@]}; do
         write_lvms_images_for_arch "$arch"
     done
     popd
@@ -1068,6 +1068,11 @@ case "$command" in
     manifests)
         update_manifests
         update_lvms_manifests
+        ;;
+    csi)
+        download_lvms_operator_bundle_manifest $2
+        update_lvms_manifests
+        update_lvms_images
         ;;
     *) usage;;
 esac
