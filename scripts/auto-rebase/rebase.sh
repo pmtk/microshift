@@ -101,9 +101,9 @@ write_lvms_images_for_arch(){
     while read -ers LINE; do
         name=${LINE%,*}
         img=${LINE#*,}
-        found=false
         for included in "${include_images[@]}"; do
-            if [[ "$name" == $included ]]; then
+            if [[ "$name" == "$included" ]]; then
+                name="$(echo "$name" | tr '-' '_')"
                 yq -iP -o=json e '.images["'"$name"'"] = "'"$img"'"' "${REPOROOT}/assets/release/release-${GOARCH_TO_UNAME_MAP[${arch}]}.json"
                 break;
             fi
@@ -1049,13 +1049,13 @@ usage() {
 command=${1:-help}
 case "$command" in
     to)
-        [[ $# -ne 4 ]] && usage
-        rebase_to "$2" "$3" "$4"
+        [[ $# -ne 3 ]] && usage
+        rebase_to "$2" "$3" "${4:-}"
         ;;
     download)
-        [[ $# -ne 4 ]] && usage
+        [[ $# -ne 3 ]] && usage
         download_release "$2" "$3"
-        download_lvms_operator_bundle_manifest "$4"
+        download_lvms_operator_bundle_manifest "${4:-}"
         ;;
     changelog) update_changelog;;
     buildfiles) update_buildfiles;;
@@ -1068,11 +1068,6 @@ case "$command" in
     manifests)
         update_manifests
         update_lvms_manifests
-        ;;
-    csi)
-        download_lvms_operator_bundle_manifest $2
-        update_lvms_manifests
-        update_lvms_images
         ;;
     *) usage;;
 esac
