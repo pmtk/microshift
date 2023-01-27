@@ -1049,11 +1049,11 @@ usage() {
 command=${1:-help}
 case "$command" in
     to)
-        [[ $# -ne 3 ]] && usage
+        [[ $# -ne 4 ]] && usage
         rebase_to "$2" "$3" "${4:-}"
         ;;
     download)
-        [[ $# -ne 3 ]] && usage
+        [[ $# -ne 4 ]] && usage
         download_release "$2" "$3"
         download_lvms_operator_bundle_manifest "${4:-}"
         ;;
