@@ -1,0 +1,5 @@
+FROM busybox:1.35
+WORKDIR /www
+COPY index.html index.html
+USER 1001
+CMD ["busybox", "httpd", "-f", "-v", "-p", "8080"]
