@@ -33,6 +33,8 @@ STAGING_DIR="$REPOROOT/_output/staging"
 PULL_SECRET_FILE="${HOME}/.pull-secret.json"
 GO_MOD_DIRS=("$REPOROOT/" "$REPOROOT/etcd")
 
+ORG=${ORG:-openshift}
+
 EMBEDDED_COMPONENTS="route-controller-manager cluster-policy-controller hyperkube etcd kube-storage-version-migrator"
 EMBEDDED_COMPONENT_OPERATORS="cluster-kube-apiserver-operator cluster-kube-controller-manager-operator cluster-openshift-controller-manager-operator cluster-kube-scheduler-operator machine-config-operator"
 LOADED_COMPONENTS="cluster-dns-operator cluster-ingress-operator service-ca-operator cluster-network-operator
@@ -337,6 +339,10 @@ clone_repo() {
         return
     fi
 
+    # substitute GH org if io.openshift.build.source-location points
+    # to github.com/openshift regardless of release image "type"
+    repo=$(echo "${repo}" | sed "s|github.com/openshift/|github.com/${ORG}/|")
+
     git init "${repodir}"
     pushd "${repodir}" >/dev/null
     git remote add origin "${repo}"
@@ -476,6 +482,11 @@ replace_using_component_commit() {
     local component=$3
     local reponame=$4
 
+    # substitute only if not present (can be present if caller obtained modulepath from cloned repo's git)
+    if ! echo "${new_modulepath}" | grep "github.com/${ORG}/"; then
+        new_modulepath="github.com/${ORG}${new_modulepath/github.com\/openshift/}"
+    fi
+
     if [[ ${pseudoversions[${component}]+foo} ]]; then
         echo "go mod edit -replace ${modulepath}=${new_modulepath}@${pseudoversions[${component}]}"
         go mod edit -replace "${modulepath}=${new_modulepath}@${pseudoversions[${component}]}"
@@ -573,6 +584,9 @@ update_modulepath_version_from_component() {
         new_modulepath=$(echo "${replacement}" | sed 's|^./staging/|github.com/openshift/kubernetes/staging/|')
         replace_using_component_commit "${modulepath}" "${new_modulepath}" "${component}" "${component}"
     else
+        if ! [[ "${replacement}" =~ onsi-ginkgo ]]; then
+            replacement="github.com/${ORG}${replacement/github.com\/openshift/}"
+        fi
         echo "go mod edit -replace ${modulepath}=${replacement/ /@}"
         go mod edit -replace "${modulepath}=${replacement/ /@}"
     fi
@@ -659,9 +673,11 @@ list_staging_repos() {
 update_go_mod() {
     title "# Updating $(basename "$(pwd)")/go.mod"
 
-    # Require updated versions of RCM and CPC
+    # Update both requires and replaces of RCM and CPC
     require_using_component_commit github.com/openshift/cluster-policy-controller cluster-policy-controller
     require_using_component_commit github.com/openshift/route-controller-manager route-controller-manager
+    replace_using_component_commit github.com/openshift/cluster-policy-controller github.com/openshift/cluster-policy-controller cluster-policy-controller cluster-policy-controller
+    replace_using_component_commit github.com/openshift/route-controller-manager github.com/openshift/route-controller-manager route-controller-manager route-controller-manager
 
     # For all repos in o/k staging, ensure a RequireDirective of v0.0.0
     # and a ReplaceDirective to an absolute modulepath to o/k staging.

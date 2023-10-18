@@ -10,9 +10,7 @@ require (
 	github.com/openshift/api v0.0.0-20231018090736-41ecc021ff27
 	github.com/openshift/build-machinery-go v0.0.0-20230824093055-6a18da01283c
 	github.com/openshift/client-go v0.0.0-20231018150822-6e226e2825a6
-	github.com/openshift/cluster-policy-controller v0.0.0-20231019190058-50c2a8337f08
 	github.com/openshift/library-go v0.0.0-20231017173800-126f85ed0cc7
-	github.com/openshift/route-controller-manager v0.0.0-20231025213326-c5cc7a73705e
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
@@ -233,6 +231,16 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/kyaml v0.14.3-0.20230601165947-6ce0bf390ce3 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect
+)
+
+require (
+	github.com/openshift/cluster-policy-controller v0.0.0-20231019190058-50c2a8337f08
+	github.com/openshift/route-controller-manager v0.0.0-20231025213326-c5cc7a73705e
+)
+
+replace (
+	github.com/openshift/cluster-policy-controller => github.com/openshift/cluster-policy-controller v0.0.0-20231019190058-50c2a8337f08
+	github.com/openshift/route-controller-manager => github.com/openshift/route-controller-manager v0.0.0-20231025213326-c5cc7a73705e
 )
 
 replace (
