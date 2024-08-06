@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/pprof"
 	"syscall"
 	"time"
 
@@ -128,14 +129,16 @@ func (m *ServiceManager) asyncRun(ctx context.Context, service Service) (<-chan 
 				klog.InfoS("SERVICE STOPPED", "service", service.Name(), "since-start", time.Since(svcStart))
 			}()
 
-			if err := service.Run(ctx, ready, stopped); err != nil && !errors.Is(err, context.Canceled) {
-				klog.ErrorS(err, "SERVICE FAILED - stopping MicroShift", "service", service.Name(), "since-start", time.Since(svcStart))
-				if err := syscall.Kill(syscall.Getpid(), syscall.SIGTERM); err != nil {
-					klog.Warningf("error killing process: %v", err)
+			pprof.Do(ctx, pprof.Labels("component", service.Name()), func(ctx context.Context) {
+				if err := service.Run(ctx, ready, stopped); err != nil && !errors.Is(err, context.Canceled) {
+					klog.ErrorS(err, "SERVICE FAILED - stopping MicroShift", "service", service.Name(), "since-start", time.Since(svcStart))
+					if err := syscall.Kill(syscall.Getpid(), syscall.SIGTERM); err != nil {
+						klog.Warningf("error killing process: %v", err)
+					}
+				} else {
+					klog.InfoS("SERVICE COMPLETED", "service", service.Name(), "since-start", time.Since(svcStart))
 				}
-			} else {
-				klog.InfoS("SERVICE COMPLETED", "service", service.Name(), "since-start", time.Since(svcStart))
-			}
+			})
 		}()
 	})
 	return ready, stopped

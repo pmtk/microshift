@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 	"syscall"
@@ -54,12 +56,54 @@ func NewRunMicroshiftCommand() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.BoolVar(&multinode, "multinode", false, "enable multinode mode")
-	err := flags.MarkHidden("multinode")
-	if err != nil {
+	if err := flags.MarkHidden("multinode"); err != nil {
 		panic(err)
 	}
 
+	cpuprofile := "/tmp/cpu.prof"
+	// flags.StringVar(&cpuprofile, "cpuprofile", "", "Enable CPU profiling")
+	// if err := flags.MarkHidden("cpuprofile"); err != nil {
+	// 	panic(err)
+	// }
+
+	memprofile := ""
+	//memprofile := "/tmp/mem.prof"
+	// flags.StringVar(&memprofile, "memprofile", "", "Enable memory profiling")
+	// if err := flags.MarkHidden("memprofile"); err != nil {
+	// 	panic(err)
+	// }
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		if cpuprofile != "" {
+			f, err := os.Create(cpuprofile)
+			if err != nil {
+				klog.Fatalf("Error: %v", err)
+			}
+			defer f.Close()
+			klog.Infof("Created file for cpu profiling: %s", cpuprofile)
+
+			if err := pprof.StartCPUProfile(f); err != nil {
+				klog.Fatalf("Error: %v", err)
+			}
+			defer pprof.StopCPUProfile()
+			klog.Infof("Started CPU profiling")
+		}
+
+		if memprofile != "" {
+			f, err := os.Create(memprofile)
+			if err != nil {
+				klog.Fatalf("Error: %v", err)
+			}
+			defer f.Close()
+			klog.Infof("Created file for memory profiling: %s", memprofile)
+
+			runtime.GC() // get up-to-date statistics
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				klog.Fatalf("Could not write memory profile: %v", err)
+			}
+			klog.Infof("Started memory profiling")
+		}
+
 		versionInfo := version.Get()
 		klog.InfoS("Version", "microshift", versionInfo.String(), "base", release.Base)
 
