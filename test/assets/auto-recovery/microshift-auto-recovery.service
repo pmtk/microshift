@@ -1,0 +1,8 @@
+[Unit]
+Description=MICROSHIFT AUTO RECOVERY
+
+[Service]
+ExecStart=/usr/bin/echo HELLO
+
+[Install]
+WantedBy=multi-user.target
