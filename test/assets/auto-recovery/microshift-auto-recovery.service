@@ -1,0 +1,11 @@
+[Unit]
+Description=MICROSHIFT AUTO RECOVERY
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/microshift restore --auto-recovery /var/lib/microshift-auto-recovery
+ExecStart=/usr/bin/systemctl reset-failed microshift
+ExecStart=/usr/bin/systemctl start microshift
+
+[Install]
+WantedBy=multi-user.target
