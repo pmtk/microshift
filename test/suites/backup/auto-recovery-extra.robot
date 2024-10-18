@@ -17,24 +17,55 @@ ${SAFETY_BACKUP}    /var/lib/microshift.safety
 
 
 *** Test Cases ***
-Using Systemd Dropin To React On Failure Of MicroShift
+# Using Systemd Dropin To React On Failure Of MicroShift
+#     [Documentation]    TODO
+
+#     Stop MicroShift
+#     Create Safety Backup
+#     Create Backup With Marker
+#     Set Up MicroShift Auto Recovery Unit
+
+#     Corrupt Etcd Database
+#     Start MicroShift Expecting Failure
+#     Wait For Auto Recovery Unit To Finish
+#     Command Should Work    ls /var/lib/microshift/marker
+#     Systemctl Check Service SubState    microshift.service    running
+
+#     [Teardown]    Run Keywords
+#     ...    Restore Safety Backup
+#     ...    AND
+#     ...    Clean Up MicroShift Auto Recovery Unit
+#     ...    AND
+#     ...    Command Should Work    rm -rf ${WORKDIR}
+
+Auto Recovery On Red Boot
     [Documentation]    TODO
+
+    # After redboot-task-runner runs, it stays in active state.
+    # It won't run again unless stopped.
+    # Alternative is to create a systemd drop-in for the service with RemainAfterExit=no
+    Command Should Work    systemctl stop redboot-task-runner.service
+    Greenboot Workaround For Boot Counter
+    Command Should Work    rm -rf ${SAFETY_BACKUP}
 
     Stop MicroShift
     Create Safety Backup
     Create Backup With Marker
-    Set Up MicroShift Auto Recovery Unit
+    Set Up Greenboot Red Script
 
     Corrupt Etcd Database
     Start MicroShift Expecting Failure
-    Wait For Auto Recovery Unit To Finish
+
+    Command Should Fail    systemctl restart greenboot-healthcheck
+    Wait Until Keyword Succeeds    10x    5s
+    ...    Systemctl Check Service SubState    redboot-task-runner.service    exited
     Command Should Work    ls /var/lib/microshift/marker
     Systemctl Check Service SubState    microshift.service    running
 
     [Teardown]    Run Keywords
     ...    Restore Safety Backup
     ...    AND
-    ...    Clean Up MicroShift Auto Recovery Unit
+    ...    Command Should Work    rm -f /etc/greenboot/red.d/100-auto-recovery.sh
     ...    AND
     ...    Command Should Work    rm -rf ${WORKDIR}
 
@@ -102,3 +133,13 @@ Wait For Auto Recovery Unit To Finish
     Sleep    5s
     Wait Until Keyword Succeeds    10x    5s
     ...    Systemctl Check Service SubState    microshift-auto-recovery.service    dead
+
+Set Up Greenboot Red Script
+    Command Should Work    mkdir -p /etc/greenboot/red.d
+    ${drop_in}=    Operating System.Get File    ./assets/auto-recovery/red-script.sh
+    Upload String To File    ${drop_in}    /etc/greenboot/red.d/100-auto-recovery.sh
+
+Greenboot Workaround For Boot Counter
+    # Because of greenboot's bug, we need to it here, so the system doesn't reboot after red boot.
+    Command Should Work
+    ...    bash -c "grub2-editenv list | grep -q boot_success=1 && /usr/bin/grub2-editenv /boot/grub2/grubenv unset boot_counter"
