@@ -51,7 +51,7 @@ jobs:
           path: output/ 
 
       - name: build Microshift image with sudo
-        if:  inputs.okd-version == 'run-in-bootc-container'
+        if:  inputs.action == 'run-in-bootc-container'
         shell: bash
         run: |
           cd ${GITHUB_WORKSPACE}
@@ -59,7 +59,7 @@ jobs:
 
 
       - name: run Microshift container with sudo
-        if:  inputs.okd-version == 'run-in-bootc-container'
+        if:  inputs.action == 'run-in-bootc-container'
         shell: bash
         run: |
           sudo podman run --privileged --rm --name microshift-okd -d microshift-okd
