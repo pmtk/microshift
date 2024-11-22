@@ -37,12 +37,6 @@ jobs:
           mkdir output
           sudo apt-get install podman -y
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
-      - name: Build Microshift RPMs
-        shell: bash
-        run: |
           # podman version applies bad ulimits default causing "too many open files" errors so we override ulimits.
           TMPDIR=/mnt/tmp podman build --ulimit nofile=65536:65536 \
                                        --build-arg OKD_VERSION_TAG=${{ inputs.okd-version }} \
