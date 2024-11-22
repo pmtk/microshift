@@ -18,7 +18,7 @@ USER 1000:1000
 WORKDIR /src
 # Preparing for the build
 RUN echo '{"auths":{"fake":{"auth":"aWQ6cGFzcwo="}}}' > /tmp/.pull-secret && \
-   /src/scripts/devenv-builder/configure-vm.sh --no-build --no-set-release-version --skip-dnf-update /tmp/.pull-secret && \
+   bash -x /src/scripts/devenv-builder/configure-vm.sh --no-build --no-set-release-version --skip-dnf-update /tmp/.pull-secret && \
    /src/okd/src/use_okd_assets.sh --replace ${OKD_REPO} ${OKD_VERSION_TAG}
 
 # Building Microshift RPMs and create local repo
