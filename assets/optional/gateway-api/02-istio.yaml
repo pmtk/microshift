@@ -2,6 +2,8 @@ apiVersion: sailoperator.io/v1alpha1
 kind: Istio
 metadata:
   name: openshift-gateway-api
+  annotations:
+    healthcheck.microshift.io: '{"openshift-gateway-api": {"deployments": ["istiod-openshift-gateway-api"]}}'
 spec:
   version: v1.23.0
   namespace: openshift-gateway-api
