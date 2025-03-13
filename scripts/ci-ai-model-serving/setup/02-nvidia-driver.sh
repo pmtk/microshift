@@ -14,10 +14,10 @@ fi
 
 # baseos and appstream are already enabled by configure-vm.sh
 sudo subscription-manager repos \
-    --enable=codeready-builder-for-rhel-9-x86_64-rpms
+    --enable="codeready-builder-for-rhel-9-"$(uname -m)"-rpms"
 
 sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+sudo dnf config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel9/"$(uname -m)"/cuda-rhel9.repo"
 
 sudo dnf install g++ -y
 

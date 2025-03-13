@@ -2,4 +2,4 @@
 
 set -xeuo pipefail
 
-sudo reboot now
+sudo reboot

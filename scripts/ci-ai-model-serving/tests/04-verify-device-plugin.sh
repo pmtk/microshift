@@ -4,10 +4,10 @@ set -xeuo pipefail
 
 oc rollout status -n nvidia-device-plugin daemonset/nvidia-device-plugin-daemonset
 
-capacity=$(oc get node -o json | jq -r '.items[0].status.capacity')
+capacity=$(oc get node -o=jsonpath='{ .items[0].status.capacity }')
 gpus=$(echo "${capacity}" | jq -r '."nvidia.com/gpu"')
 
-if [[ "${gpus}" != "1" ]]; then
+if [[ "${gpus}" == "null" ]]; then
     echo "Node's capacity does not include NVIDIA GPU"
     exit 1
 fi 

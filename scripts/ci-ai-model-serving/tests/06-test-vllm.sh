@@ -100,7 +100,7 @@ fi
 
 # Query the model again - just for fun and double checking.
 # Because of temperature=0.5, the responses vary between calls.
-curl -X POST \
+resp=$(curl -X POST \
     granite-predictor.apps.example.com/v1/completions \
     --connect-to "granite-predictor.apps.example.com::$(hostname -i):" \
     -H "Content-Type: application/json" \
@@ -108,8 +108,18 @@ curl -X POST \
         "model": "granite-3b-code-base-2k",
         "prompt": "Once upon a time,",
         "max_tokens": 256,
-        "temperature": 0.5}' | jq
+        "temperature": 0.5}')
 
+text=$(echo "${resp}" | jq -r '.choices[0].text')
+if [[ "${text}" == "null" ]]; then
+    echo "Text does not exist"
+    res=1
+fi
+
+if (( "${#text}" == 0 )); then 
+    echo "Text is empty"
+    res=1
+fi
 
 oc delete -n test-vllm route granite
 oc delete -n test-vllm InferenceService granite-3b-code-base-2k

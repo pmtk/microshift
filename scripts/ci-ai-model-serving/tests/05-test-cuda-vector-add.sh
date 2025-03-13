@@ -34,12 +34,13 @@ oc wait --for=condition=complete --timeout=120s -n cuda-test job/test-cuda-vecto
 
 # Get the logs
 pod=$(oc get pods -n cuda-test --selector=batch.kubernetes.io/job-name=test-cuda-vector-add --output=jsonpath='{.items[*].metadata.name}')
-logs=$(oc logs -n cuda-test "${pod}")
+logfile=$(mktemp)
+oc logs -n cuda-test "${pod}" > "${logfile}"
 
 oc delete job -n cuda-test test-cuda-vector-add
 oc delete ns cuda-test
 
-if ! echo "${logs}" | grep -q PASSED; then
+if ! grep -q -E '^Test PASSED$' "${logfile}"; then
     echo "CUDA vector-add test failed"
     exit 1
 fi
