@@ -68,12 +68,15 @@ release_arm64="$(oc image info --registry-config=/tmp/registry.json $OPENSHIFT_R
 pullspec_release_amd64="registry.ci.openshift.org/ocp/release:${release_amd64}"
 pullspec_release_arm64="registry.ci.openshift.org/ocp-arm64/release-arm64:${release_arm64}"
 
+rhoai_release="registry.redhat.io/rhoai/odh-operator-bundle:v2.18"
+
 APP_ID=$(cat /secrets/pr-creds/app_id) \
 KEY=/secrets/pr-creds/key.pem \
 ORG=${ORG:-openshift} \
 REPO=${REPO:-microshift} \
 AMD64_RELEASE=${pullspec_release_amd64} \
 ARM64_RELEASE=${pullspec_release_arm64} \
+RHOAI_RELEASE=${rhoai_release} \
 ./scripts/auto-rebase/rebase.py
 
 # LVMS is not tracked in the OCP release image.  Instead, rely on the
