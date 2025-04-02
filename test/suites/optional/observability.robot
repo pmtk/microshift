@@ -7,6 +7,7 @@ Library             SSHLibrary
 Library             ../../resources/journalctl.py
 Resource            ../../resources/kubeconfig.resource
 Resource            ../../resources/common.resource
+Resource            ../../resources/microshift-process.resource
 Resource            ../../resources/systemd.resource
 
 Suite Setup         Setup Suite And Prepare Test Host
@@ -81,6 +82,7 @@ Deploy Debug Config
     Should Be Equal As Integers    ${rc}    0
     Upload String To File    ${cfg_patched}    ${CONFIG_PATH}
     Systemctl    restart    microshift-observability
+    Wait For MicroShift Service
 
 Teardown Suite And Revert Test Host
     [Documentation]    Calls the global Teardown Suite keyword and restores the opentelemetry-collector.yaml to its
@@ -92,5 +94,8 @@ Teardown Suite And Revert Test Host
         ${cfg}    OperatingSystem.Get File    ${CONFIG_ORIGINAL}
         Upload String To File    ${cfg}    ${CONFIG_PATH}
         Systemctl    restart    microshift-observability
+        # Restarting microshift-observability.service also restarts microshift.service
+        # which can disrupt the suites that comes after this one.
+        Wait For MicroShift Service
     END
     Teardown Suite
