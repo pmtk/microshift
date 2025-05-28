@@ -31,12 +31,12 @@ func MicroShiftHealthcheck(ctx context.Context, timeout time.Duration) error {
 }
 
 func CustomWorkloadHealthcheck(ctx context.Context, timeout time.Duration, definition string) error {
-	if enabled, err := microshiftServiceShouldBeOk(ctx, timeout); err != nil {
-		printPrerunLog()
-		return err
-	} else if !enabled {
-		return nil
-	}
+	// if enabled, err := microshiftServiceShouldBeOk(ctx, timeout); err != nil {
+	// 	printPrerunLog()
+	// 	return err
+	// } else if !enabled {
+	// 	return nil
+	// }
 
 	workloads := map[string]NamespaceWorkloads{}
 
@@ -54,12 +54,12 @@ func CustomWorkloadHealthcheck(ctx context.Context, timeout time.Duration, defin
 }
 
 func EasyCustomWorkloadHealthcheck(ctx context.Context, timeout time.Duration, namespace string, deployments, daemonsets, statefulsets []string) error {
-	if enabled, err := microshiftServiceShouldBeOk(ctx, timeout); err != nil {
-		printPrerunLog()
-		return err
-	} else if !enabled {
-		return nil
-	}
+	// if enabled, err := microshiftServiceShouldBeOk(ctx, timeout); err != nil {
+	// 	printPrerunLog()
+	// 	return err
+	// } else if !enabled {
+	// 	return nil
+	// }
 
 	workloads := map[string]NamespaceWorkloads{
 		namespace: {
