@@ -15,9 +15,10 @@ cd "${ROOTDIR}/test"
 set -x
 "${RF_VENV}/bin/robocop" \
     --exclude 1015 \
-    --configure 0504:max_len:40 \
-    --configure 0505:max_calls:20 \
-    --configure 0508:line_length:200 \
-    --configure 0506:max_lines:1000
+    --configure line-too-long.line_length=200
+    # --configure max_len=40 \
+    # --configure max_calls=20 \
+    # --configure line_length=200 \
+    # --configure max_lines=1000
 
 "${RF_VENV}/bin/robotidy" --check --diff .
