@@ -2220,6 +2220,7 @@ k8s.io/kubernetes/openshift-kube-apiserver/admission/customresourcevalidation/ro
 k8s.io/kubernetes/openshift-kube-apiserver/admission/customresourcevalidation/scheduler
 k8s.io/kubernetes/openshift-kube-apiserver/admission/customresourcevalidation/securitycontextconstraints
 k8s.io/kubernetes/openshift-kube-apiserver/admission/customresourcevalidation/securitycontextconstraints/validation
+k8s.io/kubernetes/openshift-kube-apiserver/admission/dynamicapi
 k8s.io/kubernetes/openshift-kube-apiserver/admission/namespaceconditions
 k8s.io/kubernetes/openshift-kube-apiserver/admission/network/apis/externalipranger
 k8s.io/kubernetes/openshift-kube-apiserver/admission/network/apis/externalipranger/v1

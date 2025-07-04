@@ -26,6 +26,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
 
+	"k8s.io/kubernetes/openshift-kube-apiserver/admission/dynamicapi"
+
 	configv1 "github.com/openshift/api/config/v1"
 	openshiftcontrolplanev1 "github.com/openshift/api/openshiftcontrolplane/v1"
 	"github.com/openshift/api/operator/v1alpha1"
@@ -34,7 +36,6 @@ import (
 
 	"github.com/openshift/microshift/pkg/assets"
 	"github.com/openshift/microshift/pkg/config"
-	"github.com/openshift/microshift/pkg/util"
 	"github.com/openshift/microshift/pkg/util/cryptomaterial"
 )
 
@@ -176,19 +177,24 @@ func (s *OCPRouteControllerManager) Run(ctx context.Context, ready chan<- struct
 	// No matter which ends first - if it ends with an error,
 	// it'll cause ServiceManager to trigger graceful shutdown.
 
+	close(ready)
 	errc := make(chan error)
 
-	go func() {
-		healthcheckStatus := util.RetryTCPConnection(ctx, "localhost", "8445")
-		if !healthcheckStatus {
-			e := fmt.Errorf("initial healthcheck on %s failed", s.Name())
-			klog.Error(e)
-			errc <- e
-			return
-		}
-		klog.Infof("%s is ready", s.Name())
-		close(ready)
-	}()
+	// go func() {
+	// 	healthcheckStatus := util.RetryTCPConnection(ctx, "localhost", "8445")
+	// 	if !healthcheckStatus {
+	// 		e := fmt.Errorf("initial healthcheck on %s failed", s.Name())
+	// 		klog.Error(e)
+	// 		errc <- e
+	// 		return
+	// 	}
+	// 	klog.Infof("%s is ready", s.Name())
+	// 	close(ready)
+	// }()
+
+	<-dynamicapi.NTFY
+
+	klog.Infof("PMTK RouteControllerManager - got NTFY starting")
 
 	panicChannel := make(chan any, 1)
 	go func() {

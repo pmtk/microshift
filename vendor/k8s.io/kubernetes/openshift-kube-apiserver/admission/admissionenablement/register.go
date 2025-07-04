@@ -6,6 +6,7 @@ import (
 	"k8s.io/apiserver/pkg/admission/plugin/resourcequota"
 	mutatingwebhook "k8s.io/apiserver/pkg/admission/plugin/webhook/mutating"
 	"k8s.io/kubernetes/openshift-kube-apiserver/admission/autoscaling/mixedcpus"
+	"k8s.io/kubernetes/openshift-kube-apiserver/admission/dynamicapi"
 
 	"github.com/openshift/apiserver-library-go/pkg/admission/imagepolicy"
 	imagepolicyapiv1 "github.com/openshift/apiserver-library-go/pkg/admission/imagepolicy/apis/imagepolicy/v1"
@@ -26,6 +27,7 @@ import (
 )
 
 func RegisterOpenshiftKubeAdmissionPlugins(plugins *admission.Plugins) {
+	dynamicapi.Register(plugins)
 	authorizationrestrictusers.Register(plugins)
 	hostassignment.Register(plugins)
 	imagepolicy.Register(plugins)
@@ -59,6 +61,7 @@ var (
 
 	// openshiftAdmissionPluginsForKubeBeforeMutating are the admission plugins to add after kube admission, before mutating webhooks
 	openshiftAdmissionPluginsForKubeBeforeMutating = []string{
+		"microshift.io/DynamicAPI",
 		"autoscaling.openshift.io/ClusterResourceOverride",
 		managementcpusoverride.PluginName, // "autoscaling.openshift.io/ManagementCPUsOverride"
 		"authorization.openshift.io/RestrictSubjectBindings",
