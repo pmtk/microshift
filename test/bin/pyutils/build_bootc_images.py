@@ -299,8 +299,8 @@ def process_containerfile(groupdir, containerfile, dry_run):
                 "sudo", "podman", "build",
                 "--authfile", PULL_SECRET,
                 "--secret", f"id=pullsecret,src={PULL_SECRET}",
-                "--cache-to", f"{MIRROR_REGISTRY}/{cf_outname}",
-                "--cache-from", f"{MIRROR_REGISTRY}/{cf_outname}",
+                # "--cache-to", f"{MIRROR_REGISTRY}/{cf_outname}",
+                # "--cache-from", f"{MIRROR_REGISTRY}/{cf_outname}",
                 "-t", cf_outname, "-f", cf_outfile,
                 IMAGEDIR
             ]
@@ -655,7 +655,7 @@ def main():
             ifile = os.path.join(ipkgdir, ifile)
             run_template_cmd(ifile, ofile, args.dry_run)
         # Run the mirror registry
-        common.run_command([f"{SCRIPTDIR}/mirror_registry.sh"], args.dry_run)
+        #common.run_command([f"{SCRIPTDIR}/mirror_registry.sh"], args.dry_run)
         # Add local registry credentials to the input pull secret file
         global PULL_SECRET
         opull_secret = os.path.join(BOOTC_IMAGE_DIR, "pull_secret.json", )

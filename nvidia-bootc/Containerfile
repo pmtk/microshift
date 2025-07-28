@@ -1,0 +1,65 @@
+
+#FROM registry.redhat.io/rhel9-eus/rhel-9.6-bootc:9.6
+FROM registry.redhat.io/openshift4/microshift-bootc-rhel9:v4.19
+
+# Override proxy settings from parent image
+ENV NO_PROXY=''
+ENV HTTP_PROXY=''
+ENV HTTPS_PROXY=''
+
+ARG ARCH=x86_64
+ARG NVIDIA_DRIVER_VERSION=575.57.08
+
+ARG DP_MANIFEST_VER="v0.17.2"
+ARG DP_MANIFEST_DEST="/etc/microshift/manifests.d/10-nvidia-device-plugin"
+ARG DP_MANIFEST_URL="https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/refs/tags/${DP_MANIFEST_VER}/deployments/static/nvidia-device-plugin-privileged-with-service-account.yml"
+
+RUN curl \
+      -o /tmp/nvidia-driver.run \
+      https://us.download.nvidia.com/XFree86/Linux-${ARCH}/${NVIDIA_DRIVER_VERSION}/NVIDIA-Linux-${ARCH}-${NVIDIA_DRIVER_VERSION}.run  && \
+    chmod +x /tmp/nvidia-driver.run && \
+    KERNEL_VER=$(rpm -q --qf "%{VERSION}-%{RELEASE}" kernel) && \
+    KERNEL_VER_ARCH="${KERNEL_VER}.$(uname -m)" && \
+    dnf install -y g++ make "kernel-devel-${KERNEL_VER}" && \
+    dnf clean all && \
+    /tmp/nvidia-driver.run --kernel-name=${KERNEL_VER_ARCH} --no-systemd --no-rebuild-initramfs --silent
+
+
+# FROM registry.redhat.io/openshift4/microshift-bootc-rhel9:v4.19
+
+# ENV NO_PROXY=''
+# ENV HTTP_PROXY=''
+# ENV HTTPS_PROXY=''
+
+# RUN \
+#     DEST="/etc/microshift/manifests.d/10-nvidia-device-plugin"; \
+#     VER="v0.17.2"; \
+#     URL="https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/refs/tags/${VER}/deployments/static/nvidia-device-plugin-privileged-with-service-account.yml" ; \
+#     mkdir -p "${DEST}" && \
+#     curl -s -L "${URL}" -o "${DEST}/nvidia-device-plugin.yml"
+
+# COPY <<EOF /etc/microshift/manifests.d/10-nvidia-device-plugin/kustomization.yaml
+# apiVersion: kustomize.config.k8s.io/v1beta1
+# kind: Kustomization
+# resources:
+#   - nvidia-device-plugin.yml
+# EOF
+# FROM registry.redhat.io/rhel9-eus/rhel-9.6-bootc:9.6
+
+# ARG NVIDIA_DRIVER_VERSION=575.57.08
+
+# RUN curl \
+#         -o /tmp/nvidia_driver-linux-x86_64-${NVIDIA_DRIVER_VERSION}-archive.tar.xz \
+#         https://developer.download.nvidia.com/compute/nvidia-driver/redist/nvidia_driver/linux-x86_64/nvidia_driver-linux-x86_64-${NVIDIA_DRIVER_VERSION}-archive.tar.xz && \
+#     tar -xvf /tmp/nvidia_driver-linux-x86_64-${NVIDIA_DRIVER_VERSION}-archive.tar.xz -C /tmp/ 
+
+# RUN \
+#     KERNEL_VER=$(rpm -q --qf "%{VERSION}-%{RELEASE}" kernel); \
+#     KERNEL_VER_ARCH="${KERNEL_VER}.$(uname -m)"; \
+#     dnf install -y g++ make "kernel-devel-${KERNEL_VER}" && \
+#     dnf clean all && \
+#     cd /tmp/nvidia_driver-linux-x86_64-${NVIDIA_DRIVER_VERSION}-archive/kernel-open && \
+#     KERNEL_UNAME="${KERNEL_VER_ARCH}" make && \
+#     mkdir -p /usr/lib/modules/${KERNEL_VER_ARCH}/extra && \
+#     cp nvidia*.ko /usr/lib/modules/${KERNEL_VER_ARCH}/extra/ && \
+#     depmod -a ${KERNEL_VER_ARCH}
