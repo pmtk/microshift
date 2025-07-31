@@ -1040,6 +1040,8 @@ EOF
         --name "${SCENARIO}" \
         --randomize "${TEST_RANDOMIZATION}" \
         --loglevel TRACE \
+        --listener "./resources/listener.py" \
+        --pythonpath ./resources \
         --outputdir "${SCENARIO_INFO_DIR}/${SCENARIO}" \
         --debugfile "${SCENARIO_INFO_DIR}/${SCENARIO}/rf-debug.log" \
         -x junit.xml \

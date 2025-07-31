@@ -31,5 +31,5 @@ scenario_run_tests() {
         --variable "LOKI_HOST:$(hostname)" \
         --variable "LOKI_PORT:3200" \
         --variable "PROM_EXPORTER_PORT:8889" \
-        suites/optional/
+        suites/optional/gateway-api.robot
 }

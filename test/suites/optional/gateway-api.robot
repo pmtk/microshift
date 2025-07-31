@@ -2,6 +2,7 @@
 Documentation       Test Gateway API functionality
 
 Resource            ../../resources/microshift-network.resource
+# Resource            ../../resources/sos.resource
 
 Suite Setup         Setup Suite With Namespace
 Suite Teardown      Teardown Suite With Namespace
@@ -21,17 +22,11 @@ Test Simple HTTP Route
     [Setup]    Run Keywords
     ...    Setup Namespace
     ...    Deploy Hello MicroShift
-    TRY
-        Create Gateway    ${GATEWAY_HOSTNAME}    ${GATEWAY_PORT}    ${NS_GATEWAY}
-    EXCEPT
-        Oc Logs    deploy/istiod-openshift-gateway-api    openshift-gateway-api
-        Oc Logs    deploy/servicemesh-operator3    openshift-gateway-api
-        Fail    Failed to create gateway
-    END
+    Create Gateway    ${GATEWAY_HOSTNAME}    ${GATEWAY_PORT}    ${NS_GATEWAY}
     Create HTTP Route    ${GATEWAY_HOSTNAME}    ${NS_GATEWAY}
     Access Hello MicroShift Success    ushift_port=${GATEWAY_PORT}    hostname=${GATEWAY_HOSTNAME}
-    [Teardown]    Run Keywords
-    ...    Delete Namespace
+    Fail    "PMTK"
+    [Teardown]    Delete Namespace
 
 
 *** Keywords ***
@@ -43,7 +38,7 @@ Deploy Hello MicroShift
 
 Setup Namespace
     [Documentation]    Configure a namespace where to create all resources for later cleanup.
-    Set Suite Variable    \${NS_GATEWAY}    ${NAMESPACE}-gw-1
+    VAR    ${NS_GATEWAY}    ${NAMESPACE}-gw-1    scope=SUITE
     Create Namespace    ${NS_GATEWAY}
 
 Delete Namespace
@@ -68,8 +63,8 @@ Create HTTP Route
     [Documentation]    Create an HTTP route using the given hostname and namespace. Waits for acceptance in a gateway.
     [Arguments]    ${hostname}    ${namespace}
     ${tmp}=    Set Variable    /tmp/route.yaml
-    Set Test Variable    ${HOSTNAME}    ${hostname}
-    Set Test Variable    ${NS}    ${namespace}
+    VAR    ${HOSTNAME}    ${hostname}    scope=TEST
+    VAR    ${NS}    ${namespace}    scope=TEST
     Run Keyword And Ignore Error
     ...    Remove File    ${tmp}
     Generate File From Template    ${HTTP_ROUTE_MANIFEST_TMPL}    ${tmp}

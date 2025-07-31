@@ -20,7 +20,7 @@ Setup Suite With Namespace
     Login MicroShift Host
     Setup Kubeconfig
     ${ns}=    Create Unique Namespace
-    Set Suite Variable    \${NAMESPACE}    ${ns}
+    VAR    ${NAMESPACE}    ${ns}    scope=SUITE
 
 Create Unique Namespace
     [Documentation]    Creates a namespace with a unique suffix
