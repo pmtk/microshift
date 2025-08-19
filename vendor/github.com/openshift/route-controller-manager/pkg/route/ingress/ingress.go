@@ -33,7 +33,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 
 	routev1 "github.com/openshift/api/route/v1"
@@ -256,10 +255,11 @@ func NewController(eventsClient kv1core.EventsGetter, routeClient routeclient.Ro
 		},
 	})
 
-	if !c.MetricsCreated() {
-		legacyregistry.MustRegister(c)
-	}
-	klog.Info("ingress-to-route metrics registered with prometheus")
+	// Starting, stopping, and starting RCM causes metrics to be registered twice without unregistering which leads to panic.
+	// if !c.MetricsCreated() {
+	// 	legacyregistry.MustRegister(c)
+	// }
+	// klog.Info("ingress-to-route metrics registered with prometheus")
 
 	return c
 }

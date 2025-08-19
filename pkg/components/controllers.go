@@ -127,7 +127,7 @@ func startServiceCAController(ctx context.Context, cfg *config.Config, kubeconfi
 	return nil
 }
 
-func startIngressController(ctx context.Context, cfg *config.Config, kubeconfigPath string) error {
+func StartIngressController(ctx context.Context, cfg *config.Config, kubeconfigPath string) error {
 	var (
 		clusterRoleBinding = []string{
 			"components/openshift-router/cluster-role-binding.yaml",

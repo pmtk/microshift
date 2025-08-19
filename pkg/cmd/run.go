@@ -16,6 +16,7 @@ import (
 	"github.com/openshift/microshift/pkg/admin/prerun"
 	"github.com/openshift/microshift/pkg/config"
 	"github.com/openshift/microshift/pkg/controllers"
+	"github.com/openshift/microshift/pkg/dynamicapi"
 	"github.com/openshift/microshift/pkg/gdp"
 	"github.com/openshift/microshift/pkg/kustomize"
 	"github.com/openshift/microshift/pkg/loadbalancerservice"
@@ -204,7 +205,13 @@ func RunMicroshift(cfg *config.Config) error {
 	util.Must(m.AddService(controllers.NewKubeScheduler(cfg)))
 	util.Must(m.AddService(controllers.NewKubeControllerManager(runCtx, cfg)))
 	util.Must(m.AddService(controllers.NewOpenShiftCRDManager(cfg)))
-	util.Must(m.AddService(controllers.NewRouteControllerManager(cfg)))
+
+	dynamicapiManager, err := dynamicapi.NewDynamicAPIManager(cfg)
+	if err != nil {
+		klog.Fatalf("failed to create dynamicapi manager: %v", err)
+	}
+	util.Must(m.AddService(dynamicapiManager))
+
 	util.Must(m.AddService(controllers.NewOpenShiftDefaultSCCManager(cfg)))
 	util.Must(m.AddService(mdns.NewMicroShiftmDNSController(cfg)))
 	util.Must(m.AddService(controllers.NewInfrastructureServices(cfg)))

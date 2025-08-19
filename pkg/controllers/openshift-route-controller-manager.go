@@ -51,6 +51,11 @@ const (
 	componentRCM = "route-controller-manager"
 )
 
+func NewRouteControllerManagerErr(cfg *config.Config) (*OCPRouteControllerManager, error) {
+	m := NewRouteControllerManager(cfg)
+	return m, m.configErr
+}
+
 func NewRouteControllerManager(cfg *config.Config) *OCPRouteControllerManager {
 	s := &OCPRouteControllerManager{}
 	s.configErr = s.configure(cfg)

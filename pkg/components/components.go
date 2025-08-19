@@ -25,10 +25,6 @@ func StartComponents(cfg *config.Config, ctx context.Context) error {
 		return err
 	}
 
-	if err := startIngressController(ctx, cfg, kubeAdminConfig); err != nil {
-		klog.Warningf("Failed to start ingress router controller: %v", err)
-		return err
-	}
 	if err := startDNSController(ctx, cfg, kubeAdminConfig); err != nil {
 		klog.Warningf("Failed to start DNS controller: %v", err)
 		return err
