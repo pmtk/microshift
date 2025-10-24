@@ -17,11 +17,15 @@ _DEFAULT_REPO = "microshift"
 
 
 class GithubUtils:
-    def __init__(self, dry_run=False):
+    def __init__(self, dry_run=False, anonymous=False):
         self.dry_run = dry_run
-        self.org, self.repo = self._get_org_repo_from_env()
-        self.token = self._get_gh_token_from_env()
-        self.gh_repo = Github(self.token).get_repo(f"{self.org}/{self.repo}")
+        if anonymous:
+            self.gh_repo = Github()
+            self.dry_run = True
+        else:
+            self.org, self.repo = self._get_org_repo_from_env()
+            self.token = self._get_gh_token_from_env()
+            self.gh_repo = Github(self.token).get_repo(f"{self.org}/{self.repo}")
 
     def _get_org_repo_from_env(self) -> tuple[str, str]:
         if self.dry_run:
@@ -153,6 +157,31 @@ class GithubUtils:
                 logging.warning(f"PR #{pull_req.number} for '{branch_name}' exists already but was closed")
             return None
         return pull_req
+
+    def release_exists(self, tag) -> bool:
+        """Check if a release exists for a given tag."""
+        if self.dry_run:
+            logging.info(f"[DRY RUN] Check if release exists for {tag}")
+            return True
+        return self.gh_repo.get_release(tag) is not None
+
+    def generate_release_notes(self, previous_tag, tag_name, target_commitish) -> str:
+        """Generate release notes for a given tag."""
+        if self.dry_run:
+            logging.info(f"[DRY RUN] Generate release notes for {tag_name} from {target_commitish} to {previous_tag}")
+            return
+
+        release_notes = self.gh_repo.generate_release_notes(tag_name, previous_tag_name=previous_tag, target_commitish=target_commitish)
+        logging.info(f"Generated release notes for {tag}: {release_notes}")
+        return release_notes
+    
+    def create_release(self, tag, name, body, draft=True, prerelease=False):
+        """Create a release for a given tag."""
+        if self.dry_run:
+            logging.info(f"[DRY RUN] Create release for {tag=}: {name=} {draft=} {prerelease=} {body} ")
+            return
+        release = self.gh_repo.create_git_release(tag, name=name, message=body, draft=draft, prerelease=prerelease)
+        logging.info(f"Created release {tag}: {release.html_url}: {release.body}")
 
 
 def try_get_env(var_name, default=None, die=False) -> str:

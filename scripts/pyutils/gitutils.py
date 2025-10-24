@@ -69,19 +69,19 @@ class GitUtils():
             return
         self.remote.remove(self.git_repo, BOT_REMOTE_NAME)
 
-    def push(self, branch_name):
+    def push(self, ref):
         if self.dry_run:
-            logging.info(f"[DRY RUN] git push --force {branch_name}")
+            logging.info(f"[DRY RUN] git push --force {ref}")
             return
 
-        push_result = self.remote.push(branch_name, force=True)
+        push_result = self.remote.push(ref, force=True)
 
         if len(push_result) != 1:
             raise Exception(f"Unexpected amount ({len(push_result)}) of items in push_result: {push_result}")
         if push_result[0].flags & PushInfo.ERROR:
             raise Exception(f"Pushing branch failed: {push_result[0].summary}")
         if push_result[0].flags & PushInfo.FORCED_UPDATE:
-            logging.info(f"Branch '{branch_name}' existed and was updated (force push)")
+            logging.info(f"Ref '{ref}' existed and was updated (force push)")
 
     def get_remote_branch(self, branch_name):
         """
@@ -133,6 +133,35 @@ class GitUtils():
             f"Local branch is on top of {base_branch_name}'s commit '{commit_str(local_merge_base[0])}'"
         )
         return True
+
+    def tag_exists(self, tag):
+        """Checks if a given tag exists in the local repository."""
+        if self.dry_run:
+            return True
+        return self.git_repo.tag(tag) is not None
+
+    def create_tag(self, tag, sha):
+        """Creates a new tag in the local repository."""
+        if self.dry_run:
+            logging.info(f"[DRY RUN] git tag {tag} {sha}")
+            return
+        # logging.info(f"Using 'GIT_COMMITTER_DATE={timestamp}' for 'git tag {tag} {sha}'")
+        # run_process(['git', 'tag', '-m', tag, tag, sha], env)
+        self.git_repo.tag.
+        self.git_repo.create_tag(tag, sha) # TODO Committer date
+
+    def get_previous_tag(self, tag):
+        """Returns the name of the tag _before_ tag on the branch."""
+        if self.dry_run:
+            return None
+        #     output = run_process(["git", "describe", f'{release_name}~1', '--abbrev=0'])
+        return self.git_repo.tags[tag].previous_tag()
+
+    def get_full_commit_sha(self, sha):
+        """Returns the full commit SHA for a given short SHA."""
+        if self.dry_run:
+            return None
+        return self.git_repo.commit(sha).hexsha
 
 
 def commit_str(commit):

@@ -95,8 +95,6 @@ def main():
     The main function of the script. It runs the `check_one()` function for both 'ocp-dev-preview'
     and 'ocp' release types and for a specified version depending upon provided arguments.
     """
-    common.load_github_token()
-
     major, minor = common.get_version_from_makefile()
 
     # We build a default list of versions to scan using the current
@@ -167,20 +165,22 @@ def main():
     if args.versions_to_scan:
         versions_to_scan = args.versions_to_scan
 
+    gitutils = gitutils.GitUtils(dry_run=args.dry_run)
+    ghutils = ghutils.GithubUtils(dry_run=args.dry_run)
+
     new_releases = []
     if args.ec:
-        new_releases.extend(find_new_releases(versions_to_scan, URL_BASE, 'ocp-dev-preview'))
-        new_releases.extend(find_new_releases(versions_to_scan, URL_BASE_X86, 'ocp-dev-preview'))
+        new_releases.extend(find_new_releases(gitutils, ghutils, versions_to_scan, URL_BASE, 'ocp-dev-preview'))
+        new_releases.extend(find_new_releases(gitutils, ghutils, versions_to_scan, URL_BASE_X86, 'ocp-dev-preview'))
     if args.rc:
-        new_releases.extend(find_new_releases(versions_to_scan, URL_BASE, 'ocp'))
-        new_releases.extend(find_new_releases(versions_to_scan, URL_BASE_X86, 'ocp'))
+        new_releases.extend(find_new_releases(gitutils, ghutils, versions_to_scan, URL_BASE, 'ocp'))
+        new_releases.extend(find_new_releases(gitutils, ghutils, versions_to_scan, URL_BASE_X86, 'ocp'))
 
     if not new_releases:
         logging.info("No new releases found.")
         return
 
     print()
-    common.add_token_remote()
 
     unique_releases = {
         r.commit_sha: r
@@ -188,7 +188,7 @@ def main():
     }
 
     for new_release in unique_releases.values():
-        publish_candidate_release(new_release, not args.dry_run)
+        publish_candidate_release(gitutils, ghutils, new_release)
 
 
 class VersionListParser(html.parser.HTMLParser):
@@ -244,7 +244,7 @@ class VersionListParser(html.parser.HTMLParser):
         logging.warning(f"WARNING: error processing HTML: {message}")
 
 
-def find_new_releases(versions_to_scan, url_base, release_type):
+def find_new_releases(gitutils, ghutils, versions_to_scan, url_base, release_type):
     """Returns a list of Release instances for missing releases.
     """
     new_releases = []
@@ -261,7 +261,7 @@ def find_new_releases(versions_to_scan, url_base, release_type):
         if version_prefix not in versions_to_scan:
             continue
         try:
-            nr = check_for_new_releases(url_base, release_type, version)
+            nr = check_for_new_releases(gitutils, ghutils, url_base, release_type, version)
             if nr:
                 new_releases.append(nr)
         except Exception as err:  # pylint: disable=broad-except
@@ -269,7 +269,7 @@ def find_new_releases(versions_to_scan, url_base, release_type):
     return new_releases
 
 
-def check_for_new_releases(url_base, release_type, version):
+def check_for_new_releases(gitutils, ghutils, url_base, release_type, version):
     """
     Checks the latest RPMs for a given release type and version,
     and returns a Release instance for any that don't exist.
@@ -320,7 +320,7 @@ def check_for_new_releases(url_base, release_type, version):
     release_date = rpm_version_details["release_date"]
     patch_number = rpm_version_details["patch_num"]
     commit_sha = rpm_version_details["commit_sha"]
-    full_commit_sha = str.strip(common.run_process(["git", "rev-parse", "--verify", f"{commit_sha}^{{commit}}"]))
+    full_commit_sha = gitutils.get_full_commit_sha(commit_sha)
 
     # Older release names # look like "4.13.0-ec-2" but we had a few
     # sprints where we published multiple builds, so use more of the
@@ -331,7 +331,7 @@ def check_for_new_releases(url_base, release_type, version):
 
     # Check if the release already exists
     logging.info(f"Checking for release {release_name}...")
-    if common.github_release_exists(release_name):
+    if ghutils.release_exists(release_name):
         logging.info(f"Found an existing release {release_name}, no work to do")
         return None
     logging.info(f"Release tag {release_name} not found on remote repository")
@@ -347,7 +347,7 @@ def check_for_new_releases(url_base, release_type, version):
     )
 
 
-def publish_candidate_release(new_release, take_action):
+def publish_candidate_release(gitutils, ghutils, new_release):
     """Creates a release preamble, then tags and publishes the release.
     """
     product_version = new_release.product_version
@@ -386,7 +386,7 @@ def publish_candidate_release(new_release, take_action):
     ```
 
     """)
-    common.publish_release(new_release, preamble, take_action)
+    common.publish_release(gitutils, ghutils, new_release, preamble, prerelease=True)
 
 
 if __name__ == "__main__":

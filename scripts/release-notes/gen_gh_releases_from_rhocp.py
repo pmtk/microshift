@@ -88,7 +88,7 @@ def get_rpm_releases():
         return releases
 
 
-def publish_release(new_release, take_action):
+def publish_release(ghutils, gitutils, new_release):
     """
     Creates a release preamble, then tags and publishes the release.
     """
@@ -100,7 +100,7 @@ def publish_release(new_release, take_action):
     To install MicroShift {product_version}, follow the documentation: https://docs.redhat.com/en/documentation/red_hat_build_of_microshift/{xy}
     """)
 
-    common.publish_release(new_release, preamble, take_action)
+    common.publish_release(new_release, preamble)
 
 
 def is_branch_synced_with_main(ci_job_branch):
@@ -162,7 +162,9 @@ def main():
     parser = get_args_parser()
     args = parser.parse_args()
 
-    if args.ci_job_branch and not is_branch_synced_with_main(args.ci_job_branch):
+    ghutils = ghutils.GithubUtils(anonymous=True)
+
+    if args.ci_job_branch and not ghutils.is_branch_under_active_development(args.ci_job_branch):
         logging.warning(f"The CI job is running against a branch that is not synced with main: {args.ci_job_branch}")
         exit(0)
 
@@ -182,7 +184,8 @@ def main():
             logging.info(f"Saved {len(rpm_releases)} releases to {args.output}")
 
     elif args.command == "publish":
-        common.load_github_token()
+        ghutils = ghutils.GithubUtils(dry_run=args.dry_run)
+        gitutils = gitutils.GitUtils(dry_run=args.dry_run)
 
         if os.getuid() == 0:
             logging.warning("Running 'publish' as root is not recommended to avoid potential local git repo issues.")
@@ -191,12 +194,12 @@ def main():
         with open(args.input, "r", encoding="utf-8") as f:
             j = json.load(f)
             rpm_releases = [Release(**r) for r in j]
-        common.add_token_remote()
+        gitutils.setup_remote_with_token(ghutils.token, ghutils.org, ghutils.repo)
         logging.info(f"Attempting to publish {len(rpm_releases)} draft releases")
         i = 1
         for r in rpm_releases:
-            if not common.github_release_exists(r.release_name):
-                publish_release(r, not args.dry_run)
+            if not ghutils.release_exists(r.release_name):
+                publish_release(ghutils, gitutils, r)
             else:
                 logging.info(f"Release {r.release_name} already exists on remote GitHub repository, skipping")
             logging.info(f"Progress: {i}/{len(rpm_releases)}")
