@@ -1223,6 +1223,27 @@ check_for_manifests_changes() {
     return 1
 }
 
+apply_one_time_migration_patches() {
+    title "Applying one-time migration patches"
+
+    pushd "${REPOROOT}" >/dev/null
+
+    for p in "${REPOROOT}/scripts/auto-rebase/rebase_migration_patches"/*.patch; do \
+        echo "Applying patch ${p}"
+        if git apply --reject "${p}"; then
+            echo "Patch ${p} applied successfully"
+            rm -f "${p}"
+            git add .
+            git commit -m "apply one-time migration patch $(basename "${p}")"
+        else
+            echo "Patch ${p} failed to apply"
+            exit 1
+        fi
+    done
+
+    popd >/dev/null
+}
+
 # Runs each OCP rebase step in sequence, commiting the step's output to git
 rebase_to() {
     local release_image_amd64=$1
@@ -1236,6 +1257,9 @@ rebase_to() {
     update_last_rebase "${release_image_amd64}" "${release_image_arm64}"
 
     update_changelog
+
+    apply_one_time_migration_patches
+
     update_go_mods
     for dirpath in "${GO_MOD_DIRS[@]}"; do
         dirname=$(basename "${dirpath}")
