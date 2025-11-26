@@ -383,7 +383,7 @@ Verify Cert Manager Kustomization Success
     ...    ${cursor}
     ...    Applying kustomization at /usr/lib/microshift/manifests.d/060-microshift-cert-manager was successful
     ...    unit=microshift
-    ...    retries=6
+    ...    retries=12
     ...    wait=5
 
 Resolve Host From Pod
