@@ -336,6 +336,13 @@ Insert and reload the following firewall rules to allow these ovn-kubernetes tra
 sudo firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
 sudo firewall-cmd --permanent --zone=trusted --add-source=169.254.169.1
 sudo firewall-cmd --permanent --zone=trusted --add-source=fd01::/48
+
+# BGP
+sudo firewall-cmd --add-port=179/tcp --permanent
+
+# Cluster 2 cluster communication
+sudo firewall-cmd --zone=trusted --add-source=10.100.0.0/16 --permanent
+
 sudo firewall-cmd --reload
 ```
 
