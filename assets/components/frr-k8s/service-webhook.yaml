@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frr-k8s-webhook-service
+  namespace: frr-k8s-system
+spec:
+  ports:
+  - port: 443
+    targetPort: webhook
+  selector:
+    control-plane: statuscleaner
