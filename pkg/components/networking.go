@@ -249,3 +249,110 @@ func getMultusRenderParams() (assets.RenderParams, error) {
 
 	return params, nil
 }
+
+func deployFRRK8s(ctx context.Context, kubeconfigPath string) error {
+	var (
+		ns = []string{
+			"components/frr-k8s/namespace.yaml",
+		}
+		crd = []string{
+			"components/frr-k8s/crd-bgpsessionstate.yaml",
+			"components/frr-k8s/crd-frrconfiguration.yaml",
+			"components/frr-k8s/crd-frrk8sconfiguration.yaml",
+			"components/frr-k8s/crd-frrnodestate.yaml",
+		}
+		sa = []string{
+			"components/frr-k8s/serviceaccount.yaml",
+		}
+		r = []string{
+			"components/frr-k8s/role-daemon.yaml",
+			"components/frr-k8s/role-nodestate-cleaner.yaml",
+		}
+		rb = []string{
+			"components/frr-k8s/rolebinding-daemon.yaml",
+			"components/frr-k8s/rolebinding-nodestate-cleaner.yaml",
+		}
+		cr = []string{
+			"components/frr-k8s/clusterrole-daemon.yaml",
+			"components/frr-k8s/clusterrole-metrics-reader.yaml",
+			"components/frr-k8s/clusterrole-proxy.yaml",
+		}
+		crb = []string{
+			"components/frr-k8s/clusterrolebinding-daemon.yaml",
+			"components/frr-k8s/clusterrolebinding-proxy.yaml",
+			"components/frr-k8s/rolebinding-privileged-scc.yaml",
+		}
+		cm = []string{
+			"components/frr-k8s/configmap.yaml",
+		}
+		svc = []string{
+			"components/frr-k8s/service-metrics.yaml",
+			"components/frr-k8s/service-webhook.yaml",
+		}
+		deploy = []string{
+			"components/frr-k8s/deployment-statuscleaner.yaml",
+		}
+		ds = []string{
+			"components/frr-k8s/daemonset.yaml",
+		}
+		webhook = []string{
+			"components/frr-k8s/validatingwebhookconfiguration.yaml",
+		}
+	)
+
+	if err := assets.ApplyNamespaces(ctx, ns, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s namespace %v: %v", ns, err)
+		return err
+	}
+	if err := assets.ApplyCRDAndWaitForEstablish(ctx, crd, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s CRDs %v: %v", crd, err)
+		return err
+	}
+	if err := assets.ApplyServiceAccounts(ctx, sa, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s serviceAccount %v: %v", sa, err)
+		return err
+	}
+	if err := assets.ApplyRoles(ctx, r, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s roles %v: %v", r, err)
+		return err
+	}
+	if err := assets.ApplyRoleBindings(ctx, rb, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s rolebindings %v: %v", rb, err)
+		return err
+	}
+	if err := assets.ApplyClusterRoles(ctx, cr, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s clusterRoles %v: %v", cr, err)
+		return err
+	}
+	if err := assets.ApplyClusterRoleBindings(ctx, crb, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s clusterRoleBindings %v: %v", crb, err)
+		return err
+	}
+	if err := assets.ApplyConfigMaps(ctx, cm, renderTemplate, nil, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s configMaps %v: %v", cm, err)
+		return err
+	}
+	if err := assets.ApplySecretWithData(ctx, "components/frr-k8s/secret.yaml", nil, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s secret: %v", err)
+		return err
+	}
+	if err := assets.ApplyServices(ctx, svc, renderTemplate, nil, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s services %v: %v", svc, err)
+		return err
+	}
+	if err := assets.ApplyDeployments(ctx, deploy, renderTemplate, nil, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s deployment %v: %v", deploy, err)
+		return err
+	}
+	if err := assets.ApplyDaemonSets(ctx, ds, renderTemplate, nil, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s daemonset %v: %v", ds, err)
+		return err
+	}
+	if err := assets.ApplyValidatingWebhookConfiguration(ctx, webhook, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply frr-k8s validatingWebhookConfiguration %v: %v", webhook, err)
+		return err
+	}
+
+	klog.Infof("FRR-K8s deployed successfully")
+	return nil
+}
