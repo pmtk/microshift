@@ -340,6 +340,8 @@ spec:
             --init-master "${K8S_NODE}" \
             --init-node "${K8S_NODE}" \
             --allow-no-uplink \
+            --enable-interconnect \
+            --enable-preconfigured-udn-addresses \
             --config-file=/run/ovnkube-config/ovnkube.conf \
             --loglevel "${OVN_KUBE_LOG_LEVEL}" \
             ${gateway_mode_flags} \
@@ -352,6 +354,7 @@ spec:
             --single-node \
             --enable-network-segmentation=true \
             --enable-multi-network=true \
+            --enable-route-advertisements \
             --gateway-v4-masquerade-subnet 169.254.0.0/17 \
             --gateway-v6-masquerade-subnet fd69::/112 \
             --acl-logging-rate-limit "20"
