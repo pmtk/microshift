@@ -35,6 +35,9 @@ func startCNIPlugin(ctx context.Context, cfg *config.Config, kubeconfigPath stri
 			"components/ovn/common/master-serviceaccount.yaml",
 			"components/ovn/common/node-serviceaccount.yaml",
 		}
+		crd = []string{
+			"components/ovn/common/crd-ra.yaml",
+		}
 		r = []string{
 			"components/ovn/common/role-node.yaml",
 			"components/ovn/common/role-sbdb.yaml",
@@ -87,6 +90,16 @@ func startCNIPlugin(ctx context.Context, cfg *config.Config, kubeconfigPath stri
 
 	if err := assets.ApplyNamespaces(ctx, ns, kubeconfigPath); err != nil {
 		klog.Warningf("Failed to apply ns %v: %v", ns, err)
+		return err
+	}
+
+	if !cfg.Network.Multus.IsEnabled() {
+		// Currently, Route Advertisement feature requires multi-network feature, so it needs NetworkAttachmentDefinition CRD.
+		crd = append(crd, "components/multus/01-crd-networkattachmentdefinition.yaml")
+	}
+
+	if err := assets.ApplyCRDAndWaitForEstablish(ctx, crd, kubeconfigPath); err != nil {
+		klog.Warningf("Failed to apply crd %v: %v", crd, err)
 		return err
 	}
 	if err := assets.ApplyServiceAccounts(ctx, sa, kubeconfigPath); err != nil {
