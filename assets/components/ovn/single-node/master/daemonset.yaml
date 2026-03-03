@@ -353,6 +353,7 @@ spec:
             --single-node \
             --enable-multi-network=true \
             --enable-route-advertisements \
+            --enable-egress-ip \
             --acl-logging-rate-limit "20"
         lifecycle:
           preStop:
