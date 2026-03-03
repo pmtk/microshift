@@ -353,8 +353,6 @@ spec:
             --single-node \
             --enable-multi-network=true \
             --enable-route-advertisements \
-            --gateway-v4-masquerade-subnet 169.254.0.0/17 \
-            --gateway-v6-masquerade-subnet fd69::/112 \
             --acl-logging-rate-limit "20"
         lifecycle:
           preStop:
