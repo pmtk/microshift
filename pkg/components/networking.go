@@ -37,6 +37,7 @@ func startCNIPlugin(ctx context.Context, cfg *config.Config, kubeconfigPath stri
 		}
 		crd = []string{
 			"components/ovn/common/crd-ra.yaml",
+			"components/ovn/common/crd-egressip.yaml",
 		}
 		r = []string{
 			"components/ovn/common/role-node.yaml",
