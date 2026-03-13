@@ -87,15 +87,15 @@ func (c *Config) computeClusterDNS() (string, error) {
 		return "", fmt.Errorf("network.serviceNetwork not filled in")
 	}
 
-	clusterDNS, err := getClusterDNS(c.Network.ServiceNetwork[0])
+	clusterDNS, err := GetClusterDNS(c.Network.ServiceNetwork[0])
 	if err != nil {
 		return "", fmt.Errorf("failed to get DNS IP: %v", err)
 	}
 	return clusterDNS, nil
 }
 
-// getClusterDNS returns cluster DNS IP that is 10th IP of the ServiceNetwork
-func getClusterDNS(serviceCIDR string) (string, error) {
+// GetClusterDNS returns cluster DNS IP that is 10th IP of the ServiceNetwork
+func GetClusterDNS(serviceCIDR string) (string, error) {
 	_, service, err := net.ParseCIDR(serviceCIDR)
 	if err != nil {
 		return "", fmt.Errorf("invalid service cidr %v: %v", serviceCIDR, err)

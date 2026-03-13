@@ -62,6 +62,9 @@ type Config struct {
 
 	GenericDevicePlugin GenericDevicePlugin `json:"genericDevicePlugin"`
 
+	// C2CC configures cluster-to-cluster communication with remote MicroShift clusters.
+	C2CC C2CC `json:"c2cc"`
+
 	// Internal-only fields
 	userSettings *Config `json:"-"` // the values read from the config file
 
@@ -419,6 +422,10 @@ func (c *Config) incorporateUserSettings(u *Config) {
 		c.Ingress.AccessLogging.HttpCaptureCookies = u.Ingress.AccessLogging.HttpCaptureCookies
 	}
 
+	if len(u.C2CC.RemoteClusters) > 0 {
+		c.C2CC.RemoteClusters = u.C2CC.RemoteClusters
+	}
+
 	// HostsWatcher configuration - only set if user provided it
 	if u.DNS.Hosts.Status != "" {
 		c.DNS.Hosts.Status = u.DNS.Hosts.Status
@@ -679,6 +686,9 @@ func (c *Config) validate() error {
 	}
 	if err := c.Network.Multus.Validate(); err != nil {
 		return fmt.Errorf("error validating multus configuration: %v", err)
+	}
+	if err := c.C2CC.validate(c.Network.ClusterNetwork, c.Network.ServiceNetwork); err != nil {
+		return fmt.Errorf("error validating c2cc configuration: %v", err)
 	}
 	return nil
 }

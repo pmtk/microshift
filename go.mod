@@ -33,6 +33,7 @@ require (
 	github.com/golang/snappy v0.0.4
 	github.com/openshift/cluster-policy-controller v0.0.0-20260311142746-44985a130641
 	github.com/openshift/route-controller-manager v0.0.0-20260211095309-624742d93f3a
+	github.com/ovn-kubernetes/libovsdb v0.8.2-0.20260302130604-c07ce22366ac
 	github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/common v0.67.5
 	github.com/prometheus/prometheus v0.302.1
@@ -67,7 +68,10 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
+	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
+	github.com/cenkalti/hub v1.0.2 // indirect
+	github.com/cenkalti/rpc2 v1.0.5 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/container-storage-interface/spec v1.9.0 // indirect
 	github.com/containerd/containerd/api v1.9.0 // indirect
@@ -86,6 +90,7 @@ require (
 	github.com/felixge/fgprof v0.9.4 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/go-asn1-ber/asn1-ber v1.5.8-0.20250403174932-29230038a667 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-ldap/ldap/v3 v3.4.11 // indirect
@@ -106,6 +111,9 @@ require (
 	github.com/go-openapi/swag/stringutils v0.25.5 // indirect
 	github.com/go-openapi/swag/typeutils v0.25.5 // indirect
 	github.com/go-openapi/swag/yamlutils v0.25.5 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.28.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -121,6 +129,7 @@ require (
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/libopenstorage/openstorage v1.0.0 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mistifyio/go-zfs v2.1.2-0.20190413222219-f784269be439+incompatible // indirect
