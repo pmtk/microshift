@@ -306,6 +306,15 @@ func startDNSController(ctx context.Context, cfg *config.Config, kubeconfigPath 
 	extraParams := assets.RenderParams{
 		"ClusterIP":    cfg.Network.DNS,
 		"HostsEnabled": cfg.DNS.Hosts.Status == config.HostsStatusEnabled,
+		"RemoteDNSIP":  "",
+	}
+
+	if cfg.C2CC.IsEnabled() {
+		remoteDNS, err := config.GetClusterDNS(cfg.C2CC.RemoteClusters[0].ServiceNetwork)
+		if err != nil {
+			return fmt.Errorf("failed to compute remote cluster DNS IP: %v", err)
+		}
+		extraParams["RemoteDNSIP"] = remoteDNS
 	}
 
 	if err := assets.ApplyServices(ctx, svc, renderTemplate, renderParamsFromConfig(cfg, extraParams), kubeconfigPath); err != nil {
