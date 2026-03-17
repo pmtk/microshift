@@ -31,6 +31,17 @@ data:
 
         reload
     }
+    {{- if .RemoteDNSIP }}
+    other-cluster.local:5353 {
+        bufsize 1232
+        errors
+        rewrite name regex (.+)\.other-cluster\.local {1}.cluster.local answer auto
+        forward . {{ .RemoteDNSIP }}:53
+        cache 900 {
+            denial 9984 30
+        }
+    }
+    {{- end }}
     hostname.bind:5353 {
         chaos
     }
