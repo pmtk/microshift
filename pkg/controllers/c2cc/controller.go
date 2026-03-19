@@ -1,11 +1,22 @@
 package c2cc
 
 /*
- * TODO:
- * - CR(D) for reporting back the status (Routes created, Latency)
- * - Consider moving `close(ready)` after 1st successful reconcile? Might prolong svc readiness greatly...
- * - Make reconcile attempts after starting ushift much faster (like every 10sec or so), then slow down to 1 a minute?
- * - Dual Stack & IPv6
+TODO:
+- Healthcheck/reachability of the other clusters
+- CR(D) for reporting back the status (Routes created, Latency)
+- Make reconcile attempts after starting microshift much faster (like every 10sec or so), then slow down to 1 a minute? Or 10/30 seconds?
+  Should there be a limit to the initial attempts which exceeding would cause microshift to exit(1)? Or CR is enough for reporting status?
+- Support Dual Stack & IPv6
+- Cleanup the routes - but not on microshift shutdown/restart. Maybe on start and align with the configuration.
+  - Kernel routes: no label/annotations so it's not possible to distinguish whose rule it is - perhaps dedicated routing table owned by microshift?
+  - OVNK: scan GR and remove old routes with our ExternalID
+- Open NBDB connection once and reuse instead of reopening each time.
+- DNS: Setup forwarding per configured cluster (more than 1). Allow for configurable domains.
+- DNS: Don't assume cluster.local (both local and remote) for the 'rewrite name regex'?
+  It cannot be changed right now and we know MicroShift should be on the other side, so it's fine for now?
+- Document: firewall requirements (scoped zone for remote pod/service CIDRs) and optional IPsec (transport mode, pod/service CIDRs).
+- Maybe check if ovnkube-master Pod (nbdb container) is ready before reconcile to avoid hitting dead socket?
+- Consider using ovn-kubernetes/go-controller/pkg/nbdb/ instead of nbdb.go to avoid unexpected schema changes
  */
 
 import (
@@ -57,7 +68,13 @@ func NewC2CCRouteManager(cfg *config.Config) *C2CCRouteManager {
 }
 
 func (c *C2CCRouteManager) Name() string           { return "c2cc-route-manager" }
-func (c *C2CCRouteManager) Dependencies() []string { return []string{"kube-apiserver"} }
+func (c *C2CCRouteManager) Dependencies() []string {
+	// Ideally we'd wait for OVN-K master Pod, but:
+	// 1. It's not possible using ServiceManager framework.
+	// 2. We don't want to hold microshift.service readiness waiting for Pod
+	//    (also it would behave too differently with C2CC enabled and disabled).
+	return []string{"kubelet"}
+}
 
 func (c *C2CCRouteManager) Run(ctx context.Context, ready chan<- struct{}, stopped chan<- struct{}) error {
 	defer close(stopped)
@@ -69,6 +86,11 @@ func (c *C2CCRouteManager) Run(ctx context.Context, ready chan<- struct{}, stopp
 	}
 
 	klog.Infof("%s starting: configuring routes for %d remote cluster(s), reconcile interval: %s", c.Name(), len(c.remoteClusters), reconcileInterval)
+
+	// Ideally, this would be after the first successful reconcile,
+	// but that would mean holding microshift.service readiness
+	// and potentially breaking startup flow.
+	// Real readiness information will be in the CR.
 	close(ready)
 
 	// Reconciliation loop: OVN infrastructure (GR_<node>) may not exist yet
