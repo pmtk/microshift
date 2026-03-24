@@ -41,7 +41,7 @@ const (
 	ownerControllerValue = "microshift-c2cc"
 	ownerControllerKey   = "k8s.ovn.org/owner-controller"
 	policyDstIP          = "dst-ip"
-	reconcileInterval    = 60 * time.Second
+	reconcileInterval    = 15 * time.Second
 )
 
 // buildNamedUUID creates an OVSDB-safe named UUID by replacing characters
