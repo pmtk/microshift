@@ -41,7 +41,7 @@ telemetry:
 c2cc:
     remoteClusters:
         - nextHop: "${IP2}"
-          clusterNetwork: "10.45.0.0/24"
+          clusterNetwork: "10.45.0.0/16"
           serviceNetwork: "10.46.0.0/16"
 CFG
 
@@ -65,7 +65,7 @@ network:
 c2cc:
     remoteClusters:
         - nextHop: "${IP1}"
-          clusterNetwork: "10.42.0.0/24"
+          clusterNetwork: "10.42.0.0/16"
           serviceNetwork: "10.43.0.0/16"
 CFG
 
