@@ -19,7 +19,7 @@ On each VM install MicroShift and open firewall ports:
 ```bash
 sudo dnf copr enable -y @microshift-io/experimental-c2cc
 sudo dnf install -y microshift-io-dependencies
-sudo dnf install -y microshift microshift-networking
+sudo dnf install -y microshift microshift-networking microshift-multus
 
 sudo firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
 sudo firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16
